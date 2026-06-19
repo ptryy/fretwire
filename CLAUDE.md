@@ -80,6 +80,9 @@ See [docs/integration.md](docs/integration.md) for the full spec. In short:
 
 ## Deploy (Vercel)
 
+See [docs/deployment.md](docs/deployment.md) for the live deployment record
+(GitHub/Vercel targets, env vars, the IPN-callback gotcha, and the TODO list).
+
 - Hosted on Vercel; production build is clean. CLI deploys work; GitHub
   auto-deploy needs the Vercel↔GitHub app authorized on the `novtony3` account.
 - **The order flow needs a shared store on serverless.** Without it, `MemoryStore`
