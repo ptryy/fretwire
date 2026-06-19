@@ -10,7 +10,9 @@ const STYLES: Record<OrderStatus, { label: string; className: string }> = {
 export function StatusBadge({ status }: { status: OrderStatus }) {
   const s = STYLES[status] ?? STYLES.pending;
   return (
-    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${s.className}`}>
+    <span
+      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${s.className}`}
+    >
       {s.label}
     </span>
   );

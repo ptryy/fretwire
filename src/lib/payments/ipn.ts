@@ -40,7 +40,9 @@ export function signIpn(params: {
     .digest('hex');
 }
 
-export type IpnVerifyResult = { ok: true } | { ok: false; reason: 'missing' | 'stale' | 'bad-signature' };
+export type IpnVerifyResult =
+  | { ok: true }
+  | { ok: false; reason: 'missing' | 'stale' | 'bad-signature' };
 
 export function verifyIpnSignature(params: {
   ipnSecret: string;

@@ -20,7 +20,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
   return (
     <main className="mx-auto flex max-w-4xl flex-col gap-8 px-6 py-10">
-      <Link href="/products" className="text-sm text-[var(--color-muted)] hover:text-[var(--color-accent)]">
+      <Link
+        href="/products"
+        className="text-sm text-[var(--color-muted)] hover:text-[var(--color-accent)]"
+      >
         ← Back to products
       </Link>
 

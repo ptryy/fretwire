@@ -4,9 +4,7 @@ import { getProductsBySlugs } from './db/catalog-repo';
 
 /** Checkout request body (cart lines + buyer email + chosen coin). */
 export const checkoutInputSchema = z.object({
-  items: z
-    .array(z.object({ slug: z.string().min(1), qty: z.number().int().positive() }))
-    .min(1),
+  items: z.array(z.object({ slug: z.string().min(1), qty: z.number().int().positive() })).min(1),
   email: z.string().email(),
   coin: z.enum(['ETH', 'USDT']),
 });

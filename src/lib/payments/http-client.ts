@@ -2,7 +2,13 @@ import { nextNonce } from '../db/nonce-repo';
 import { env } from '../env';
 
 import { signRequest } from './sign';
-import { ORDER_STATUSES, type CreateOrderInput, type GatewayOrder, type NextPaymentsClient, type OrderStatus } from './types';
+import {
+  ORDER_STATUSES,
+  type CreateOrderInput,
+  type GatewayOrder,
+  type NextPaymentsClient,
+  type OrderStatus,
+} from './types';
 
 const ORDERS_PATH = '/api/orders';
 
@@ -30,8 +36,7 @@ function parseGatewayOrder(json: unknown): GatewayOrder {
     orderId: asStr(order.orderId) ?? asStr(order._id) ?? asStr(order.id) ?? '',
     address: asStr(order.address) ?? '',
     memo: asStr(order.memo),
-    amount:
-      typeof order.amount === 'number' || typeof order.amount === 'string' ? order.amount : 0,
+    amount: typeof order.amount === 'number' || typeof order.amount === 'string' ? order.amount : 0,
     coin: asStr(order.coin) ?? '',
     network: asStr(order.network),
     status: coerceStatus(order.status),

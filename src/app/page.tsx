@@ -16,8 +16,8 @@ export default function HomePage() {
           Self-custody gear, paid in crypto.
         </h1>
         <p className="mt-3 max-w-lg text-[var(--color-muted)]">
-          A demo storefront wired to the NextPayments gateway — checkout creates an on-chain
-          invoice and confirms via IPN.
+          A demo storefront wired to the NextPayments gateway — checkout creates an on-chain invoice
+          and confirms via IPN.
         </p>
         <Link
           href="/products"

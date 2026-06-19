@@ -28,7 +28,11 @@ describe('orders-repo', () => {
     expect(getOrder('e1')?.npOrderId).toBe('np_1');
     expect(getOrder('e1')?.address).toBe('0xabc');
 
-    markStatus('e1', { status: 'paid', transactionHash: '0xdead', paidAt: '2026-06-19T01:00:00.000Z' });
+    markStatus('e1', {
+      status: 'paid',
+      transactionHash: '0xdead',
+      paidAt: '2026-06-19T01:00:00.000Z',
+    });
     const o = getOrder('e1');
     expect(o?.status).toBe('paid');
     expect(o?.transactionHash).toBe('0xdead');

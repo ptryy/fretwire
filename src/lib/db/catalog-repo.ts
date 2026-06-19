@@ -33,9 +33,7 @@ const toProduct = (r: ProductRow): Product => ({
 });
 
 export function listCategories(): Category[] {
-  return getDb()
-    .prepare('SELECT id, slug, name FROM categories ORDER BY name')
-    .all() as Category[];
+  return getDb().prepare('SELECT id, slug, name FROM categories ORDER BY name').all() as Category[];
 }
 
 export function listProducts(opts: { categorySlug?: string; q?: string } = {}): Product[] {

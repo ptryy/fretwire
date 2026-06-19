@@ -2,8 +2,7 @@ import Link from 'next/link';
 
 import type { Category } from '@/lib/db/catalog-repo';
 
-const base =
-  'rounded-full border px-3 py-1.5 text-sm transition whitespace-nowrap';
+const base = 'rounded-full border px-3 py-1.5 text-sm transition whitespace-nowrap';
 const active = 'border-[var(--color-accent)] bg-[var(--color-accent)]/15 text-[var(--color-text)]';
 const idle =
   'border-[var(--color-border)] text-[var(--color-muted)] hover:border-[var(--color-accent)] hover:text-[var(--color-text)]';
