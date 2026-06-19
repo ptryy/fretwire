@@ -6,6 +6,8 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['test/**/*.test.ts'],
+    // Repo tests run against a throwaway in-memory SQLite db.
+    env: { DB_PATH: ':memory:' },
   },
   resolve: {
     alias: {
