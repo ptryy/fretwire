@@ -1,0 +1,106 @@
+{
+  "categories": [
+    { "slug": "wallets", "name": "Hardware Wallets" },
+    { "slug": "apparel", "name": "Apparel" },
+    { "slug": "accessories", "name": "Accessories" },
+    { "slug": "books", "name": "Books" }
+  ],
+  "products": [
+    {
+      "slug": "coldvault-x1",
+      "name": "ColdVault X1",
+      "description": "Air-gapped hardware wallet with a steel body and EAL6+ secure element.",
+      "categorySlug": "wallets",
+      "priceDisplay": 129.0,
+      "image": "🔐"
+    },
+    {
+      "slug": "coldvault-mini",
+      "name": "ColdVault Mini",
+      "description": "Pocket-sized cold storage for everyday self-custody.",
+      "categorySlug": "wallets",
+      "priceDisplay": 79.0,
+      "image": "🔑"
+    },
+    {
+      "slug": "steelkey-backup",
+      "name": "SteelKey Backup",
+      "description": "Fireproof stainless seed-phrase backup plate.",
+      "categorySlug": "wallets",
+      "priceDisplay": 49.0,
+      "image": "🛡️"
+    },
+    {
+      "slug": "hodl-hoodie",
+      "name": "HODL Hoodie",
+      "description": "Heavyweight cotton hoodie for diamond hands.",
+      "categorySlug": "apparel",
+      "priceDisplay": 59.0,
+      "image": "🧥"
+    },
+    {
+      "slug": "satoshi-tee",
+      "name": "Satoshi Tee",
+      "description": "Soft tee with a minimalist genesis-block print.",
+      "categorySlug": "apparel",
+      "priceDisplay": 29.0,
+      "image": "👕"
+    },
+    {
+      "slug": "miner-cap",
+      "name": "Miner Cap",
+      "description": "Adjustable cap with an embroidered hashrate motif.",
+      "categorySlug": "apparel",
+      "priceDisplay": 24.0,
+      "image": "🧢"
+    },
+    {
+      "slug": "ledger-pouch",
+      "name": "Ledger Pouch",
+      "description": "Padded RFID-blocking pouch for your hardware wallet.",
+      "categorySlug": "accessories",
+      "priceDisplay": 19.0,
+      "image": "👝"
+    },
+    {
+      "slug": "nfc-sticker-pack",
+      "name": "NFC Sticker Pack",
+      "description": "Programmable NFC stickers for tap-to-pay demos.",
+      "categorySlug": "accessories",
+      "priceDisplay": 9.99,
+      "image": "🏷️"
+    },
+    {
+      "slug": "crypto-mousepad",
+      "name": "Crypto Mousepad",
+      "description": "Extended desk mat with a candlestick-chart print.",
+      "categorySlug": "accessories",
+      "priceDisplay": 14.5,
+      "image": "🖱️"
+    },
+    {
+      "slug": "the-bitcoin-standard",
+      "name": "The Bitcoin Standard",
+      "description": "The decentralized alternative to central banking.",
+      "categorySlug": "books",
+      "priceDisplay": 22.0,
+      "image": "📙"
+    },
+    {
+      "slug": "mastering-ethereum",
+      "name": "Mastering Ethereum",
+      "description": "Building smart contracts and dapps, end to end.",
+      "categorySlug": "books",
+      "priceDisplay": 34.0,
+      "image": "📗"
+    },
+    {
+      "slug": "web3-primer",
+      "name": "Web3 Primer",
+      "description": "A practical introduction to wallets, tokens, and dapps.",
+      "categorySlug": "books",
+      "priceDisplay": 18.0,
+      "image": "📘"
+    }
+  ]
+}
