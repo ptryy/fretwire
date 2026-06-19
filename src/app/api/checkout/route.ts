@@ -3,8 +3,8 @@ import { randomUUID } from 'node:crypto';
 import { NextResponse } from 'next/server';
 
 import { checkoutInputSchema, priceCart } from '@/lib/checkout';
-import { createLocalOrder, setGatewayFields } from '@/lib/db/orders-repo';
 import { getClient } from '@/lib/payments/client';
+import { createLocalOrder, setGatewayFields } from '@/lib/store/orders';
 import { networkForCoin } from '@/lib/payments/types';
 
 /** Create an order: price the cart, create a gateway invoice, persist, return the pay URL. */
@@ -23,7 +23,7 @@ export async function POST(req: Request): Promise<Response> {
 
   const externalOrderId = randomUUID();
   const network = networkForCoin(coin);
-  createLocalOrder({
+  await createLocalOrder({
     externalOrderId,
     email,
     coin,
@@ -40,7 +40,7 @@ export async function POST(req: Request): Promise<Response> {
       externalOrderId,
       description: `Shop order ${externalOrderId}`,
     });
-    setGatewayFields(externalOrderId, {
+    await setGatewayFields(externalOrderId, {
       npOrderId: order.orderId,
       address: order.address,
       memo: order.memo,

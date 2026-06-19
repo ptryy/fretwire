@@ -1,45 +1,83 @@
+import { ArrowLeft } from 'lucide-react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { AddToCart } from '@/components/add-to-cart';
 import { BuyNow } from '@/components/buy-now';
-import { getProductBySlug } from '@/lib/db/catalog-repo';
+import { GuitarArt } from '@/components/guitar-art';
+import { SpecStrip } from '@/components/spec-strip';
+import { getProductBySlug, listProducts } from '@/lib/catalog';
 import { formatUsd } from '@/lib/format';
 
-export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
+type Params = Promise<{ slug: string }>;
+
+export function generateStaticParams() {
+  return listProducts().map((p) => ({ slug: p.slug }));
+}
+
+export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+  const { slug } = await params;
+  const product = getProductBySlug(slug);
+  if (!product) return {};
+  return {
+    title: `${product.brand} ${product.name}`,
+    description: product.description,
+    openGraph: { title: `${product.brand} ${product.name}`, description: product.description },
+  };
+}
+
+export default async function ProductPage({ params }: { params: Params }) {
   const { slug } = await params;
   const product = getProductBySlug(slug);
   if (!product) notFound();
 
   const item = {
     slug: product.slug,
-    name: product.name,
+    name: `${product.brand} ${product.name}`,
     price: product.priceDisplay,
-    image: product.image,
+    art: product.art,
   };
 
   return (
-    <main className="mx-auto flex max-w-4xl flex-col gap-8 px-6 py-10">
+    <main className="mx-auto flex max-w-5xl flex-col gap-8 px-6 py-12">
       <Link
         href="/products"
-        className="text-sm text-[var(--color-muted)] hover:text-[var(--color-accent)]"
+        className="inline-flex items-center gap-2 text-sm text-[var(--color-muted)] transition-colors hover:text-[var(--color-amber)]"
       >
-        ← Back to products
+        <ArrowLeft className="h-4 w-4" /> All guitars
       </Link>
 
-      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
-        <div className="flex h-72 items-center justify-center rounded-3xl border border-[var(--color-border)] bg-black/20 text-8xl">
-          {product.image}
+      <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
+        <div className="amp-glow flex items-center justify-center rounded-[var(--radius)] border border-[var(--color-border)] py-10">
+          <div className="h-80 w-48">
+            <GuitarArt art={product.art} seed={product.slug} />
+          </div>
         </div>
-        <div className="flex flex-col gap-4">
-          <h1 className="text-3xl font-semibold">{product.name}</h1>
+
+        <div className="flex flex-col gap-5">
+          <div>
+            <p className="font-mono text-xs uppercase tracking-wider text-[var(--color-subtle)]">
+              {product.brand}
+            </p>
+            <h1 className="mt-1 font-display text-4xl font-semibold tracking-tight">
+              {product.name}
+            </h1>
+            <p className="mt-1 text-sm text-[var(--color-amber)]">{product.finish}</p>
+          </div>
+
           <p className="text-[var(--color-muted)]">{product.description}</p>
-          <div className="text-2xl font-semibold">{formatUsd(product.priceDisplay)}</div>
-          <div className="mt-2 flex gap-3">
-            <AddToCart
-              product={item}
-              className="rounded-lg bg-[var(--color-accent)] px-5 py-2.5 font-medium text-white transition hover:opacity-90"
-            />
+
+          <div className="rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+            <SpecStrip specs={product.specs} />
+          </div>
+
+          <div className="font-display text-3xl font-semibold">
+            {formatUsd(product.priceDisplay)}
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <AddToCart product={item} />
             <BuyNow product={item} />
           </div>
         </div>

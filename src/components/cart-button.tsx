@@ -1,5 +1,6 @@
 'use client';
 
+import { ShoppingBag } from 'lucide-react';
 import Link from 'next/link';
 
 import { useCart } from './cart-provider';
@@ -10,11 +11,13 @@ export function CartButton() {
   return (
     <Link
       href="/cart"
-      className="relative rounded-lg px-3 py-1.5 text-sm text-[var(--color-text)] transition hover:text-[var(--color-accent)]"
+      aria-label={`Cart, ${count} item${count === 1 ? '' : 's'}`}
+      className="relative inline-flex h-10 items-center gap-2 rounded-[var(--radius)] border border-[var(--color-border-strong)] px-3 text-sm text-[var(--color-text)] transition-colors hover:border-[var(--color-amber)]"
     >
-      Cart
+      <ShoppingBag className="h-4 w-4" aria-hidden />
+      <span className="hidden sm:inline">Cart</span>
       {count > 0 && (
-        <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--color-accent)] px-1.5 text-xs font-semibold text-white">
+        <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--color-amber)] px-1.5 text-xs font-semibold text-[#14110e]">
           {count}
         </span>
       )}

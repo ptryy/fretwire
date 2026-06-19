@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 
-import type { StoredOrder } from '../db/orders-repo';
-import { getOrder } from '../db/orders-repo';
+import { getOrder } from '../store/orders';
+import type { StoredOrder } from '../store/types';
 
 import { signIpn } from './ipn';
 import type { CreateOrderInput, GatewayOrder, NextPaymentsClient } from './types';
@@ -54,7 +54,7 @@ export class MockClient implements NextPaymentsClient {
 
   async getOrder(orderId: string): Promise<GatewayOrder> {
     const ext = orderId.startsWith('mock_') ? orderId.slice('mock_'.length) : orderId;
-    const stored = getOrder(ext);
+    const stored = await getOrder(ext);
     if (!stored) throw new Error(`Unknown mock order ${orderId}`);
     return storedToGateway(stored);
   }

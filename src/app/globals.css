@@ -1,20 +1,61 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-bg: #0a0b0f;
-  --color-surface: #14161d;
-  --color-border: #262a36;
-  --color-text: #e7e9ee;
-  --color-muted: #9aa1b1;
-  --color-accent: #4f7cff;
+  --color-bg: #14110e;
+  --color-surface: #1f1a15;
+  --color-surface-2: #2a231c;
+  --color-border: #352c22;
+  --color-border-strong: #4a3d2e;
+  --color-text: #ede6da;
+  --color-muted: #a99e8e;
+  --color-subtle: #7c7261;
+  --color-amber: #e8a33d;
+  --color-amber-soft: #3a2c14;
+  --color-ember: #c2410c;
+
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --radius: 0.875rem;
 }
 
-:root {
-  color-scheme: dark;
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-border);
+  }
+
+  :root {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: var(--color-amber);
+    color: #14110e;
+  }
 }
 
-body {
-  background-color: var(--color-bg);
-  color: var(--color-text);
-  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+/* Ambient warm glow behind the hero — the tube-amp/lacquer light. */
+.amp-glow {
+  background:
+    radial-gradient(60% 80% at 75% 0%, color-mix(in oklab, var(--color-amber) 14%, transparent), transparent 70%),
+    radial-gradient(50% 60% at 0% 100%, color-mix(in oklab, var(--color-ember) 10%, transparent), transparent 70%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

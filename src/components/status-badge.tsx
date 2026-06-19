@@ -1,19 +1,23 @@
+import { CheckCircle2, CircleSlash, Clock, XCircle } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+
 import type { OrderStatus } from '@/lib/payments/types';
 
-const STYLES: Record<OrderStatus, { label: string; className: string }> = {
-  pending: { label: 'Pending', className: 'bg-amber-500/15 text-amber-300 border-amber-500/30' },
-  paid: { label: 'Paid', className: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' },
-  expired: { label: 'Expired', className: 'bg-zinc-500/15 text-zinc-300 border-zinc-500/30' },
-  cancelled: { label: 'Cancelled', className: 'bg-red-500/15 text-red-300 border-red-500/30' },
+import { Badge, type BadgeTone } from './ui/badge';
+
+const MAP: Record<OrderStatus, { label: string; tone: BadgeTone; Icon: LucideIcon }> = {
+  pending: { label: 'Pending', tone: 'amber', Icon: Clock },
+  paid: { label: 'Paid', tone: 'emerald', Icon: CheckCircle2 },
+  expired: { label: 'Expired', tone: 'neutral', Icon: CircleSlash },
+  cancelled: { label: 'Cancelled', tone: 'ember', Icon: XCircle },
 };
 
 export function StatusBadge({ status }: { status: OrderStatus }) {
-  const s = STYLES[status] ?? STYLES.pending;
+  const { label, tone, Icon } = MAP[status] ?? MAP.pending;
   return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${s.className}`}
-    >
-      {s.label}
-    </span>
+    <Badge tone={tone}>
+      <Icon className="h-3.5 w-3.5" aria-hidden />
+      {label}
+    </Badge>
   );
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { Search } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
@@ -18,14 +19,19 @@ export function SearchBox() {
         if (q.trim()) params.set('q', q.trim());
         router.push(`/products${params.toString() ? `?${params.toString()}` : ''}`);
       }}
-      className="w-full sm:max-w-xs"
+      className="relative w-full sm:max-w-xs"
     >
+      <Search
+        className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-subtle)]"
+        aria-hidden
+      />
       <input
         type="search"
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="Search products"
-        className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)] focus:outline-none"
+        placeholder="Search guitars"
+        aria-label="Search guitars"
+        className="h-11 w-full rounded-[var(--radius)] border border-[var(--color-border-strong)] bg-[var(--color-surface)] pl-9 pr-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-subtle)] transition-colors focus:border-[var(--color-amber)] focus:outline-none"
       />
     </form>
   );

@@ -1,27 +1,25 @@
 'use client';
 
+import { CreditCard } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-import { useCart } from './cart-provider';
+import { useCart, type CartItem } from './cart-provider';
+import { Button } from './ui/button';
 
-type Props = {
-  product: { slug: string; name: string; price: number; image: string };
-};
-
-export function BuyNow({ product }: Props) {
+export function BuyNow({ product }: { product: Omit<CartItem, 'qty'> }) {
   const { add } = useCart();
   const router = useRouter();
 
   return (
-    <button
-      type="button"
+    <Button
+      variant="outline"
+      leftIcon={<CreditCard className="h-4 w-4" />}
       onClick={() => {
         add(product);
         router.push('/checkout');
       }}
-      className="rounded-lg border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition hover:border-[var(--color-accent)]"
     >
       Buy now
-    </button>
+    </Button>
   );
 }

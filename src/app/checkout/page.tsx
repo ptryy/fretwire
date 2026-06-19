@@ -1,15 +1,21 @@
 'use client';
 
+import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { useCart } from '@/components/cart-provider';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select } from '@/components/ui/select';
 import { formatUsd } from '@/lib/format';
 
 const COINS = [
   { coin: 'USDT', label: 'USDT · ERC20' },
-  { coin: 'ETH', label: 'ETH' },
+  { coin: 'ETH', label: 'ETH · Ethereum' },
 ] as const;
 
 type Coin = (typeof COINS)[number]['coin'];
@@ -25,10 +31,10 @@ export default function CheckoutPage() {
 
   if (items.length === 0 && !redirecting) {
     return (
-      <main className="mx-auto flex max-w-3xl flex-col items-center gap-4 px-6 py-20 text-center">
-        <h1 className="text-2xl font-semibold">Nothing to check out</h1>
-        <Link href="/products" className="text-[var(--color-accent)] hover:underline">
-          Browse products
+      <main className="mx-auto flex max-w-2xl flex-col items-center gap-4 px-6 py-24 text-center">
+        <h1 className="font-display text-2xl font-semibold">Nothing to check out</h1>
+        <Link href="/products" className="text-[var(--color-amber)] hover:underline">
+          Browse guitars
         </Link>
       </main>
     );
@@ -64,64 +70,62 @@ export default function CheckoutPage() {
   };
 
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-6 px-6 py-10">
-      <h1 className="text-2xl font-semibold">Checkout</h1>
+    <main className="mx-auto flex max-w-2xl flex-col gap-6 px-6 py-12">
+      <h1 className="font-display text-3xl font-semibold">Checkout</h1>
 
-      <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+      <Card className="p-5">
         <h2 className="mb-3 text-sm font-semibold text-[var(--color-muted)]">Order summary</h2>
         <ul className="flex flex-col gap-2">
           {items.map((i) => (
             <li key={i.slug} className="flex justify-between text-sm">
               <span>
-                {i.name} × {i.qty}
+                {i.name} <span className="text-[var(--color-subtle)]">× {i.qty}</span>
               </span>
-              <span>{formatUsd(i.price * i.qty)}</span>
+              <span className="font-mono">{formatUsd(i.price * i.qty)}</span>
             </li>
           ))}
         </ul>
         <div className="mt-3 flex justify-between border-t border-[var(--color-border)] pt-3 font-semibold">
           <span>Total</span>
-          <span>{formatUsd(total)}</span>
+          <span className="font-display">{formatUsd(total)}</span>
         </div>
-      </div>
+      </Card>
 
       <form onSubmit={submit} className="flex flex-col gap-4">
-        <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium">Email (for your receipt)</span>
-          <input
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="email">Email for your receipt</Label>
+          <Input
+            id="email"
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
-            className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm focus:border-[var(--color-accent)] focus:outline-none"
           />
-        </label>
+        </div>
 
-        <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium">Pay with</span>
-          <select
-            value={coin}
-            onChange={(e) => setCoin(e.target.value as Coin)}
-            className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm focus:border-[var(--color-accent)] focus:outline-none"
-          >
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="coin">Pay with</Label>
+          <Select id="coin" value={coin} onChange={(e) => setCoin(e.target.value as Coin)}>
             {COINS.map((c) => (
               <option key={c.coin} value={c.coin}>
                 {c.label}
               </option>
             ))}
-          </select>
-        </label>
+          </Select>
+        </div>
 
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && (
+          <p className="text-sm text-[color-mix(in_oklab,var(--color-ember)_75%,white)]">{error}</p>
+        )}
 
-        <button
+        <Button
           type="submit"
           disabled={submitting || redirecting}
-          className="rounded-lg bg-[var(--color-accent)] px-5 py-2.5 font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+          rightIcon={<ArrowRight className="h-4 w-4" />}
         >
           {submitting || redirecting ? 'Creating order…' : `Pay ${formatUsd(total)}`}
-        </button>
+        </Button>
       </form>
     </main>
   );

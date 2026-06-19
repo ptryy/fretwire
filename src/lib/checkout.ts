@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { getProductsBySlugs } from './db/catalog-repo';
+import { getProductsBySlugs } from './catalog';
 
 /** Checkout request body (cart lines + buyer email + chosen coin). */
 export const checkoutInputSchema = z.object({

@@ -1,5 +1,5 @@
-import { nextNonce } from '../db/nonce-repo';
 import { env } from '../env';
+import { nextNonce } from '../store/nonce';
 
 import { signRequest } from './sign';
 import {
@@ -53,13 +53,14 @@ function parseGatewayOrder(json: unknown): GatewayOrder {
 export class HttpClient implements NextPaymentsClient {
   async createOrder(input: CreateOrderInput): Promise<GatewayOrder> {
     const { apiUrl, publicKey, privateKey } = env.requireHttp();
-    const { signature, timestamp, nonce, rawBody } = signRequest({
+    const nonce = await nextNonce(publicKey);
+    const { signature, timestamp, rawBody } = signRequest({
       method: 'POST',
       path: ORDERS_PATH,
       body: input,
       privateKey,
       timestamp: nowSeconds(),
-      nonce: nextNonce(publicKey),
+      nonce,
     });
     const res = await fetch(`${apiUrl}${ORDERS_PATH}`, {
       method: 'POST',
@@ -80,12 +81,13 @@ export class HttpClient implements NextPaymentsClient {
   async getOrder(orderId: string): Promise<GatewayOrder> {
     const { apiUrl, publicKey, privateKey } = env.requireHttp();
     const path = `${ORDERS_PATH}/${orderId}`;
-    const { signature, timestamp, nonce } = signRequest({
+    const nonce = await nextNonce(publicKey);
+    const { signature, timestamp } = signRequest({
       method: 'GET',
       path,
       privateKey,
       timestamp: nowSeconds(),
-      nonce: nextNonce(publicKey),
+      nonce,
     });
     const res = await fetch(`${apiUrl}${path}`, {
       method: 'GET',

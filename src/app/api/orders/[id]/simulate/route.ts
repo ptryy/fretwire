@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 
-import { getOrder } from '@/lib/db/orders-repo';
 import { env } from '@/lib/env';
 import { emitMockPaidIpn } from '@/lib/payments/mock-client';
+import { getOrder } from '@/lib/store/orders';
 
 /** Mock-only: simulate the gateway paying this order by emitting a signed IPN. */
 export async function POST(
@@ -13,7 +13,7 @@ export async function POST(
     return NextResponse.json({ error: 'not_found' }, { status: 404 });
   }
   const { id } = await params;
-  const order = getOrder(id);
+  const order = await getOrder(id);
   if (!order) {
     return NextResponse.json({ error: 'not_found' }, { status: 404 });
   }

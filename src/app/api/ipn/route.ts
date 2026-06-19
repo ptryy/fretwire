@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 
-import { markDelivered } from '@/lib/db/ipn-repo';
-import { getOrder, markStatus } from '@/lib/db/orders-repo';
 import { env } from '@/lib/env';
+import { markDelivered } from '@/lib/store/ipn-delivery';
+import { getOrder, markStatus } from '@/lib/store/orders';
 import { IPN_HEADERS, ipnPayloadSchema, verifyIpnSignature } from '@/lib/payments/ipn';
 
 /** Receive a gateway IPN: verify signature → dedupe → advance the local order. */
@@ -26,7 +26,7 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   // Idempotency: a replay is acknowledged but not re-processed.
-  if (!markDelivered(deliveryId)) {
+  if (!(await markDelivered(deliveryId))) {
     return NextResponse.json({ received: true, duplicate: true });
   }
 
@@ -42,10 +42,10 @@ export async function POST(req: Request): Promise<Response> {
   }
   const payload = parsed.data;
 
-  if (!getOrder(payload.externalOrderId)) {
+  if (!(await getOrder(payload.externalOrderId))) {
     return NextResponse.json({ received: true, unknownOrder: true });
   }
-  markStatus(payload.externalOrderId, {
+  await markStatus(payload.externalOrderId, {
     status: payload.status,
     transactionHash: payload.transactionHash ?? null,
     paidAt: payload.paidAt ?? null,

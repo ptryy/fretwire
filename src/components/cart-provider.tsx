@@ -2,11 +2,13 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
+import type { GuitarArt } from '@/lib/catalog';
+
 export type CartItem = {
   slug: string;
   name: string;
   price: number;
-  image: string;
+  art: GuitarArt;
   qty: number;
 };
 
