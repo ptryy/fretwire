@@ -1,0 +1,17 @@
+node_modules
+.next
+out
+build
+
+# env / secrets — never commit
+.env
+.env.local
+.env*.local
+
+# sqlite db files
+*.db
+*.sqlite
+*.sqlite3
+
+.DS_Store
+*.log
