@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import { AddToCart } from '@/components/add-to-cart';
 import { BuyNow } from '@/components/buy-now';
 import { GuitarArt } from '@/components/guitar-art';
+import { GuitarViewer } from '@/components/guitar-viewer';
 import { SpecStrip } from '@/components/spec-strip';
 import { getProductBySlug, listProducts } from '@/lib/catalog';
 import { formatUsd } from '@/lib/format';
@@ -49,7 +50,13 @@ export default async function ProductPage({ params }: { params: Params }) {
       </Link>
 
       <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
-        <div className="amp-glow flex items-center justify-center rounded-[var(--radius)] border border-[var(--color-border)] py-10">
+        <div className="amp-glow relative flex items-center justify-center rounded-[var(--radius)] border border-[var(--color-border)] py-10">
+          <GuitarViewer
+            art={product.art}
+            seed={product.slug}
+            name={`${product.brand} ${product.name}`}
+            finish={product.finish}
+          />
           <div className="h-80 w-48">
             <GuitarArt art={product.art} seed={product.slug} />
           </div>

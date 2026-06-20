@@ -13,16 +13,16 @@ import { cn } from '@/lib/cn';
  * fretboard 150–430, body 410–800.
  */
 
-type Shape = 'singlecut' | 'doublecut' | 'acoustic';
-type Headstock = 'inline' | 'split' | 'slotted' | 'bass';
+export type Shape = 'singlecut' | 'doublecut' | 'acoustic';
+export type Headstock = 'inline' | 'split' | 'slotted' | 'bass';
 type Feature = 'pickups' | 'soundhole';
 type PickupKind = 'single' | 'hum' | 'split';
 type Bridge = 'tele' | 'trem' | 'tom' | 'hardtail' | 'acoustic' | 'classic' | 'bass';
-type Metal = 'chrome' | 'gold' | 'black';
+export type Metal = 'chrome' | 'gold' | 'black';
 type Inlay = 'dot' | 'trapezoid' | 'none';
 type Guard = 'strat' | 'tele' | 'bass' | 'acoustic' | 'none';
 
-type ModelSpec = {
+export type ModelSpec = {
   shape: Shape;
   finish: string;
   headstock: Headstock;
@@ -44,7 +44,7 @@ type ModelSpec = {
   golpeador?: boolean;
 };
 
-const MODELS: Record<string, ModelSpec> = {
+export const MODELS: Record<string, ModelSpec> = {
   'ironwood-solaris-t': {
     shape: 'singlecut',
     finish: 'Butterscotch Blonde',
@@ -192,7 +192,7 @@ const MODELS: Record<string, ModelSpec> = {
   },
 };
 
-const FALLBACK: Record<ArtType, ModelSpec> = {
+export const FALLBACK: Record<ArtType, ModelSpec> = {
   electric: MODELS['vesper-nova-s'],
   acoustic: MODELS['sienna-dreadnought-d2'],
   classical: MODELS['cordova-estudio-c3'],
@@ -200,9 +200,9 @@ const FALLBACK: Record<ArtType, ModelSpec> = {
 };
 
 type FinishKind = 'solid' | 'wood' | 'sunburst';
-type FinishSpec = { kind: FinishKind; c: [string, string, string]; grain: boolean; gloss: number };
+export type FinishSpec = { kind: FinishKind; c: [string, string, string]; grain: boolean; gloss: number };
 
-const FINISH: Record<string, FinishSpec> = {
+export const FINISH: Record<string, FinishSpec> = {
   'Butterscotch Blonde': { kind: 'wood', c: ['#F4D177', '#E0AE3D', '#B27C22'], grain: true, gloss: 0.18 },
   'Surf Green': { kind: 'solid', c: ['#B6E0CC', '#80BFA4', '#4E8C74'], grain: false, gloss: 0.22 },
   'Cherry Sunburst': { kind: 'sunburst', c: ['#E9B24F', '#B8401C', '#531312'], grain: false, gloss: 0.26 },
@@ -217,14 +217,14 @@ const FINISH: Record<string, FinishSpec> = {
   '3-Tone Sunburst': { kind: 'sunburst', c: ['#ECCF6F', '#BE451B', '#221511'], grain: false, gloss: 0.24 },
 };
 
-const METAL: Record<Metal, [string, string, string]> = {
+export const METAL: Record<Metal, [string, string, string]> = {
   chrome: ['#F4F6F8', '#AEB6BD', '#5C6369'],
   gold: ['#F8E9B0', '#D8B24A', '#8A6A1E'],
   black: ['#4A4A50', '#2A2A2E', '#141416'],
 };
 
 /** Body outlines, centred on x=150. Returns an SVG path `d`. */
-function bodyPath(shape: Shape, cutaway: boolean): string {
+export function bodyPath(shape: Shape, cutaway: boolean): string {
   if (shape === 'doublecut') {
     // Offset double-cutaway (Strat / J-bass): two horns up top with deep
     // cutaways either side of the neck, a pinched waist, and the widest rounded
