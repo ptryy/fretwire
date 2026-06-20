@@ -38,7 +38,7 @@ export const PRODUCTS: Product[] = [
     description:
       'A bright, articulate single-cut that lives for spank and twang — bolt-on maple and a pair of vintage single-coils.',
     categorySlug: 'electric',
-    priceDisplay: 1299,
+    priceDisplay: 15,
     art: 'electric',
     finish: 'Butterscotch Blonde',
     specs: [
@@ -55,7 +55,7 @@ export const PRODUCTS: Product[] = [
     description:
       'Three single-coils and a tremolo for shimmering in-between tones and expressive dive bombs.',
     categorySlug: 'electric',
-    priceDisplay: 1549,
+    priceDisplay: 16,
     art: 'electric',
     finish: 'Surf Green',
     specs: [
@@ -72,7 +72,7 @@ export const PRODUCTS: Product[] = [
     description:
       'Mahogany body, maple cap, two humbuckers — thick sustain and a singing midrange for rock and blues.',
     categorySlug: 'electric',
-    priceDisplay: 1899,
+    priceDisplay: 20,
     art: 'electric',
     finish: 'Cherry Sunburst',
     specs: [
@@ -89,7 +89,7 @@ export const PRODUCTS: Product[] = [
     description:
       'A seven-string built for low tunings: extended scale, active pickups, and a flat, fast neck.',
     categorySlug: 'electric',
-    priceDisplay: 1749,
+    priceDisplay: 18,
     art: 'electric',
     finish: 'Satin Black',
     specs: [
@@ -105,7 +105,7 @@ export const PRODUCTS: Product[] = [
     brand: 'Sienna',
     description: 'A big-voiced flat-top with a solid Sitka top — bold projection for strumming.',
     categorySlug: 'acoustic',
-    priceDisplay: 899,
+    priceDisplay: 12,
     art: 'acoustic',
     finish: 'Natural Satin',
     specs: [
@@ -121,7 +121,7 @@ export const PRODUCTS: Product[] = [
     brand: 'Sienna',
     description: 'An orchestra model with balanced, fingerstyle-friendly response and a cedar top.',
     categorySlug: 'acoustic',
-    priceDisplay: 1049,
+    priceDisplay: 13,
     art: 'acoustic',
     finish: 'Cedar Natural',
     specs: [
@@ -138,7 +138,7 @@ export const PRODUCTS: Product[] = [
     description:
       'Versatile mid-size body — comfortable, articulate, and stage-ready with onboard pre-amp.',
     categorySlug: 'acoustic',
-    priceDisplay: 1399,
+    priceDisplay: 15,
     art: 'acoustic',
     finish: 'Vintage Sunburst',
     specs: [
@@ -155,7 +155,7 @@ export const PRODUCTS: Product[] = [
     description:
       'A concert classical with a solid cedar top and Indian rosewood — warm, even, and responsive.',
     categorySlug: 'classical',
-    priceDisplay: 1199,
+    priceDisplay: 14,
     art: 'classical',
     finish: 'French Polish',
     specs: [
@@ -172,7 +172,7 @@ export const PRODUCTS: Product[] = [
     description:
       'A dependable student classical that punches above its price — easy action, sweet tone.',
     categorySlug: 'classical',
-    priceDisplay: 649,
+    priceDisplay: 10,
     art: 'classical',
     finish: 'Natural Gloss',
     specs: [
@@ -189,7 +189,7 @@ export const PRODUCTS: Product[] = [
     description:
       'Bright attack and fast response with cypress back and sides — built for rasgueado.',
     categorySlug: 'classical',
-    priceDisplay: 1650,
+    priceDisplay: 17,
     art: 'classical',
     finish: 'Cypress Natural',
     specs: [
@@ -205,7 +205,7 @@ export const PRODUCTS: Product[] = [
     brand: 'Ironwood',
     description: 'A classic split-coil precision bass — round, punchy, and unkillable in the mix.',
     categorySlug: 'bass',
-    priceDisplay: 1149,
+    priceDisplay: 13,
     art: 'bass',
     finish: 'Olympic White',
     specs: [
@@ -222,7 +222,7 @@ export const PRODUCTS: Product[] = [
     description:
       'A five-string J-style with a slim neck and two single-coils for growl and clarity.',
     categorySlug: 'bass',
-    priceDisplay: 1499,
+    priceDisplay: 16,
     art: 'bass',
     finish: '3-Tone Sunburst',
     specs: [
