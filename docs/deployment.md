@@ -62,11 +62,48 @@ its `ipnUrl` must be a public host, not the protected deployment URL.
   `NEXT_PUBLIC_*` vars are inlined at build time, so **redeploy after changing them**.
 - **Inspect env:** `vercel env ls production --scope nov-tonys-projects`.
 
+## Live gateway (http mode) — status & blockers
+
+Attempted 2026-06-20 against **vnpayment.xyz** (account `novtony3@gmail.com`).
+
+**Done & verified working (from a normal/residential IP):**
+
+- Created an `api`-type integration **`fretwire`** in the dashboard, ipnUrl
+  `https://fretwire.vercel.app/api/ipn`. Captured Client ID (publicKey) + Client
+  Secret (privateKey). The completed view does **not** surface the `ipnSecret`.
+- Gateway origin is **`https://api.vnpayment.xyz`** (the UI's `api.nextpayments.io`
+  is a placeholder). HMAC signing (`sign.ts`) is correct — `GET /api/orders`
+  returns `{success:true}` and `POST /api/orders` returns a real pay-to address.
+- **Order contract correction:** `externalOrderId` is **required and must be a
+  positive int32 integer** (a UUID string → `VALIDATION`; an oversized value like
+  `Date.now()` ms → `500`). Fixed in `checkout/route.ts` (numeric id, keyed as a
+  string locally). Accepted pairs: **USDT/ERC20**, **ETH/ETH** (ETH/ERC20 →
+  `ORER002`). Error codes seen: `ORER001` amount, `ORER002` coin, `APER003` nonce.
+- `NEXTPAYMENTS_{API_URL,PUBLIC_KEY,PRIVATE_KEY}` set on Vercel (Production).
+
+**Blockers preventing http mode on Vercel (production currently reverted to `mock`):**
+
+1. **Cloudflare blocks Vercel egress.** `api.vnpayment.xyz` sits behind Cloudflare.
+   The identical signed request succeeds from a residential IP (200) but returns
+   **`403` (empty body)** from Vercel's serverless (datacenter) IPs. The gateway
+   must allow Vercel's egress IPs (or disable bot/datacenter blocking for `/api/*`),
+   or the merchant must run from an allowed IP / via a proxy.
+2. **Nonce watermark.** Live probing pushed the per-publicKey nonce to ~1.78e12;
+   the app's Redis `INCR` starts low → `APER003`. Before going live, seed the
+   Redis nonce key for this publicKey above the last-used value.
+3. **No `ipnSecret`** captured → inbound IPNs won't verify (the doc also flags the
+   IPN scheme may differ). Status still advances via **reconciliation** (the
+   status route calls `GET /api/orders/:id` in http mode), so IPN is non-blocking.
+
+**To enable http once #1 is resolved:** set `PAYMENTS_MODE=http` (env is staged),
+seed the nonce (#2), redeploy, and re-test checkout on `fretwire.vercel.app`.
+
 ## TODO / next steps
 
-- [ ] **Real gateway:** onboard in the NextPayments dashboard, set the five
-      `NEXTPAYMENTS_*` vars + `PAYMENTS_MODE=http`, register
-      `ipnUrl = https://fretwire.vercel.app/api/ipn`, then redeploy.
+- [ ] **Unblock http:** gateway-side — allow Vercel egress IPs through Cloudflare
+      for `/api/*`; then flip `PAYMENTS_MODE=http`, seed the nonce, redeploy.
+- [ ] Obtain the integration **`ipnSecret`** (recreate via the API to capture it)
+      and set `NEXTPAYMENTS_IPN_SECRET` if inbound IPN verification is wanted.
 - [ ] **Custom domain:** add it in Vercel and point `NEXT_PUBLIC_SITE_URL` at it
       (updates canonical SEO + IPN host).
 - [ ] Optionally extend `NEXT_PUBLIC_SITE_URL` to Preview/Development, or relax
