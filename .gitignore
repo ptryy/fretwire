@@ -20,6 +20,7 @@ next-env.d.ts
 .vercel
 .open-next
 .dev.vars
+.wrangler
 
 # Playwright MCP snapshots
 .playwright-mcp/
