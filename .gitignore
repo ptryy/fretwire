@@ -18,6 +18,8 @@ next-env.d.ts
 .DS_Store
 *.log
 .vercel
+.open-next
+.dev.vars
 
 # Playwright MCP snapshots
 .playwright-mcp/
