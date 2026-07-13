@@ -47,6 +47,23 @@ For local `wrangler dev`, copy `.dev.vars.example` to `.dev.vars` (gitignored)
 and fill in. For a real deployment, use `wrangler secret put <NAME>` for
 secrets and the `vars` block in `wrangler.jsonc` for non-secret values.
 
+## Gotcha — Workers Builds needs an explicit `PNPM_VERSION`
+
+`pnpm-workspace.yaml` approves native build scripts (`esbuild`, `sharp`,
+`unrs-resolver`, `workerd`) via the `allowBuilds` key, which only pnpm **v11+**
+understands (see `package.json`'s `packageManager: pnpm@11.8.0`, which pins
+this for local/corepack-aware tooling). Cloudflare Workers Builds does **not**
+read `packageManager`/corepack — it only respects an explicit `PNPM_VERSION`
+build variable, and defaults to an older pnpm 10.x otherwise. pnpm 10 doesn't
+recognize `allowBuilds`, and older pnpm 10.x releases additionally have an
+upstream bug ([pnpm/pnpm#9361](https://github.com/pnpm/pnpm/issues/9361))
+where a `pnpm-workspace.yaml` with build-approval settings but no `packages`
+field throws `ERROR packages field missing or empty` on `pnpm install
+--frozen-lockfile` in a fresh clone. **Set `PNPM_VERSION=11.8.0`** (or the
+version pinned in `package.json`) under the Worker's **Settings → Build →
+Variables and secrets** so the build image matches what the repo is written
+for.
+
 ## Gotcha — IPN self-callback needs an explicit public URL
 
 Vercel auto-injects `VERCEL_URL`, which `src/lib/env.ts` falls back to when
