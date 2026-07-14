@@ -7,5 +7,10 @@
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
-  }
+  },
+  "vars": {
+    "NEXTPAYMENTS_API_URL": "https://api.omnipayx.io",
+    "NEXTPAYMENTS_PUBLIC_KEY": "3efe26d312801487db0738d58b017fef0c4187b339ffcfe87b2bb39fdf54a421",
+    "PAYMENTS_MODE": "http"
+  },
 }
