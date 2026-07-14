@@ -36,4 +36,6 @@ export interface Store {
   getConfig(): Promise<PaymentsConfigOverride | null>;
   /** Merge a partial override into the stored config. */
   setConfig(patch: PaymentsConfigOverride): Promise<void>;
+  /** Drop the override entirely — every field falls back to env. */
+  clearConfig(): Promise<void>;
 }

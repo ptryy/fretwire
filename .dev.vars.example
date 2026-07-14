@@ -17,3 +17,9 @@ UPSTASH_REDIS_REST_TOKEN=
 # Public origin of THIS worker (used to build the IPN self-callback URL in
 # mock mode). Defaults to wrangler dev's local port.
 NEXT_PUBLIC_SITE_URL=http://localhost:8787
+
+# Unlocks /dev/config on a deployed build (the runtime gateway-config editor).
+# Unset -> the route 404s, as if the feature didn't exist. It is the whole
+# security boundary and unlock attempts are not rate-limited: use a random
+# 32+ char value, never a word. Set it as a Secret, not a plaintext var.
+DEV_CONFIG_TOKEN=

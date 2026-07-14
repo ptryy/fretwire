@@ -63,4 +63,8 @@ export class MemoryStore implements Store {
   async setConfig(patch: PaymentsConfigOverride): Promise<void> {
     state().config = { ...(state().config ?? {}), ...patch };
   }
+
+  async clearConfig(): Promise<void> {
+    state().config = null;
+  }
 }

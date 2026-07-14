@@ -11,3 +11,13 @@ export function getStore(): Store {
   cached = hasRedis ? new RedisStore() : new MemoryStore();
   return cached;
 }
+
+/**
+ * Whether writes outlive a single instance. `MemoryStore` does not: on serverless
+ * each invocation (Vercel) or isolate (Workers) gets its own map, so an override
+ * written by one request is invisible to the next. `/dev/config` surfaces this,
+ * so a vanishing override reads as a setup gap rather than a bug.
+ */
+export function isPersistentStore(): boolean {
+  return getStore() instanceof RedisStore;
+}

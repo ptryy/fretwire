@@ -42,10 +42,58 @@ table), set as Worker vars/secrets instead of Vercel env vars:
 | `NEXTPAYMENTS_API_URL` / `_PUBLIC_KEY` / `_PRIVATE_KEY` / `_IPN_SECRET` | Only for `PAYMENTS_MODE=http`         |
 | `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | Selects `RedisStore`; omit both for `MemoryStore`      |
 | `NEXT_PUBLIC_SITE_URL`                              | Canonical URL **and** the IPN self-callback host (see gotcha below) |
+| `DEV_CONFIG_TOKEN`                                  | Unlocks `/dev/config`; unset → the route 404s (see below) |
+
+### `/dev/config` — changing the gateway on a running deploy
+
+`/dev/config` is the host-agnostic way to repoint the gateway or inject a key
+without a rebuild — the same thing a Cloudflare dashboard edit does, but it also
+works on Vercel, a VPS, or a client's own box. It writes a partial override into
+the Store, which `getPaymentsConfig` layers on top of env (override wins per
+field).
+
+It is **fail-closed**: on a deployed build (`NODE_ENV=production`) the page and
+its API 404 unless `DEV_CONFIG_TOKEN` is set, and then only serve a caller that
+has traded the token for the unlock cookie. Because that token is the entire
+boundary and unlock attempts aren't rate-limited, use a random 32+ char value,
+set as a **Secret**.
+
+Two invariants worth knowing before you rely on it:
+
+- **Credentials are write-only.** The editor never reads a private key or IPN
+  secret back — just a `••••1a2b` hint. A blank secret field therefore means
+  "keep what's stored", not "clear it", so saving an unrelated field can't wipe
+  a key you injected. **Reset to env** is the only way to clear one.
+- **It needs a shared store.** On `MemoryStore` the override lives in one
+  isolate's memory and the next request may not see it. The editor shows a
+  warning when that's the case; set the Upstash vars to make it stick.
 
 For local `wrangler dev`, copy `.dev.vars.example` to `.dev.vars` (gitignored)
-and fill in. For a real deployment, use `wrangler secret put <NAME>` for
-secrets and the `vars` block in `wrangler.jsonc` for non-secret values.
+and fill in.
+
+### The Worker's own settings are the source of truth
+
+For a real deployment, set **every** var and secret on the Worker itself —
+dashboard (**Settings → Variables and secrets**) or `wrangler secret put <NAME>`
+— and keep `wrangler.jsonc` free of a `vars` block. The app only ever reads
+`process.env` (`src/lib/env.ts`); OpenNext copies the Worker's env onto
+`process.env` on the first request, so a dashboard value lands with no code
+change and no rebuild.
+
+This is why `wrangler.jsonc` sets **`"keep_vars": true`**. By default Wrangler
+treats its config file as authoritative — *"if you change your vars in the
+dashboard, wrangler will override/delete them on its next deploy"* — so a
+`vars` block would silently wipe the dashboard config on every deploy, and
+would also commit gateway config to git. `keep_vars` turns that off.
+
+Consequence worth knowing: **editing a var or secret in the dashboard takes
+effect immediately.** It rolls out a new version of the already-built Worker —
+no `cf:build`, no redeploy. That's the supported way to repoint the gateway or
+swap a key on a live deploy.
+
+Secrets (`NEXTPAYMENTS_PRIVATE_KEY`, `NEXTPAYMENTS_IPN_SECRET`,
+`UPSTASH_REDIS_REST_TOKEN`) must be **Secret**-type, not Plaintext — Plaintext
+values are readable in the dashboard and in `wrangler` output.
 
 ## Gotcha — Workers Builds needs an explicit `PNPM_VERSION`
 

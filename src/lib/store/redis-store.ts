@@ -59,4 +59,8 @@ export class RedisStore implements Store {
     const current = (await this.getConfig()) ?? {};
     await this.redis.set(CONFIG_KEY, { ...current, ...patch });
   }
+
+  async clearConfig(): Promise<void> {
+    await this.redis.del(CONFIG_KEY);
+  }
 }

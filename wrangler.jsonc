@@ -8,9 +8,14 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
-  "vars": {
-    "NEXTPAYMENTS_API_URL": "https://api.omnipayx.io",
-    "NEXTPAYMENTS_PUBLIC_KEY": "3efe26d312801487db0738d58b017fef0c4187b339ffcfe87b2bb39fdf54a421",
-    "PAYMENTS_MODE": "http"
-  },
+
+  // The Worker's own "Variables and secrets" (dashboard / `wrangler secret put`)
+  // are the source of truth for runtime config — the app reads them from
+  // `process.env` (see src/lib/env.ts). Deliberately no `vars` block here: it
+  // would put gateway config in git, and by default Wrangler treats this file as
+  // authoritative and would delete the dashboard's vars on the next deploy.
+  // `keep_vars` turns that off, so a dashboard edit survives every deploy.
+  //
+  // Expected vars/secrets: see docs/cloudflare.md.
+  "keep_vars": true,
 }

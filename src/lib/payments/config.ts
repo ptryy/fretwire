@@ -1,11 +1,16 @@
 import { env } from '../env';
-import { getStore } from '../store';
+import { getStore, isPersistentStore } from '../store';
 
 import {
   CONFIG_FIELDS,
   PAYMENTS_MODES,
+  SECRET_CONFIG_FIELDS,
+  isSecretField,
   type ConfigField,
+  type ConfigFieldView,
   type ConfigSource,
+  type ConfigView,
+  type PaymentsConfigOverride,
   type PaymentsMode,
   type ResolvedPaymentsConfig,
 } from './types';
@@ -66,12 +71,63 @@ export async function getPaymentsConfig(): Promise<ResolvedPaymentsConfig> {
   return (await resolve()).effective;
 }
 
-/** Effective config plus where each field came from — for the dev config UI. */
+/** Effective config plus where each field came from. Server-only — holds secrets. */
 export async function getConfigWithSources(): Promise<{
   effective: ResolvedPaymentsConfig;
   sources: Record<ConfigField, ConfigSource>;
 }> {
   return resolve();
+}
+
+/**
+ * An empty *secret* in a patch means "leave it alone", never "clear it". The
+ * config editor renders secrets blank because they're write-only, so otherwise
+ * every save that didn't retype the private key would wipe it — fatal for the
+ * main use case, which is injecting a key the env doesn't have. Clearing is
+ * `clearConfig()`'s job.
+ *
+ * Empty *non-secret* fields keep their meaning: fall back to env.
+ */
+export function withSecretsKeptUnlessRetyped(
+  patch: PaymentsConfigOverride,
+): PaymentsConfigOverride {
+  const next = { ...patch };
+  for (const field of SECRET_CONFIG_FIELDS) {
+    if (next[field]?.trim() === '') delete next[field];
+  }
+  return next;
+}
+
+/** `'••••1a2b'` — enough to tell two keys apart, not enough to use one. */
+function hint(value: string): string {
+  return value === '' ? '' : `••••${value.slice(-4)}`;
+}
+
+/**
+ * The only shape `/dev/config` is allowed to see. Credentials are write-only:
+ * their value never leaves the server, just a last-4 hint of whether one is set.
+ * Everything the editor renders comes from here, so a redaction bug can't hide
+ * behind a second, unredacted read path.
+ */
+export async function getConfigView(): Promise<ConfigView> {
+  const { effective, sources } = await resolve();
+  const entries = CONFIG_FIELDS.map((field): [ConfigField, ConfigFieldView] => {
+    const value = effective[field];
+    const secret = isSecretField(field);
+    return [
+      field,
+      {
+        source: sources[field],
+        secret,
+        value: secret ? '' : value,
+        hint: secret ? hint(value) : '',
+      },
+    ];
+  });
+  return {
+    fields: Object.fromEntries(entries) as Record<ConfigField, ConfigFieldView>,
+    persistent: isPersistentStore(),
+  };
 }
 
 /** Assert the http-path credentials are present; throws a clear error if not. */

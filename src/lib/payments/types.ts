@@ -36,6 +36,31 @@ export const CONFIG_FIELDS = [
   'appUrl',
 ] as const satisfies ReadonlyArray<keyof ResolvedPaymentsConfig>;
 
+/** Credentials. Write-only over the wire: the config editor never reads them back. */
+export const SECRET_CONFIG_FIELDS = ['privateKey', 'ipnSecret'] as const satisfies ReadonlyArray<
+  keyof ResolvedPaymentsConfig
+>;
+
+export function isSecretField(field: ConfigField): boolean {
+  return (SECRET_CONFIG_FIELDS as readonly string[]).includes(field);
+}
+
+export type ConfigFieldView = {
+  source: ConfigSource;
+  secret: boolean;
+  /** The live value — always `''` for a secret field, which is never sent out. */
+  value: string;
+  /** For a secret field only: `'••••1a2b'` when set, `''` when unset. */
+  hint: string;
+};
+
+/** What `/dev/config` is allowed to see: every field, with credentials redacted. */
+export type ConfigView = {
+  fields: Record<ConfigField, ConfigFieldView>;
+  /** False on `MemoryStore` — an override there won't survive on serverless. */
+  persistent: boolean;
+};
+
 /** Enabled (coin, network) pairs the demo offers — the gateway's catalog. */
 export const ACCEPTED_COINS = [
   { coin: 'ETH', network: 'ETH', label: 'Ethereum (ETH)' },

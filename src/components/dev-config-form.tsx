@@ -1,6 +1,6 @@
 'use client';
 
-import { Save } from 'lucide-react';
+import { RotateCcw, Save, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -8,26 +8,21 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { useToast } from '@/components/ui/toast';
-import type {
-  ConfigField,
-  ConfigSource,
-  PaymentsMode,
-  ResolvedPaymentsConfig,
-} from '@/lib/payments/types';
+import type { ConfigSource, ConfigView, PaymentsMode } from '@/lib/payments/types';
 
-type Props = {
-  initialEffective: ResolvedPaymentsConfig;
-  initialSources: Record<ConfigField, ConfigSource>;
-};
+type Props = { initialView: ConfigView };
 
 /** The five string fields, in display order. `mode` is a separate Select. */
 const TEXT_FIELDS = [
   { key: 'apiUrl', label: 'API URL', placeholder: 'https://api.omnipayx.io' },
   { key: 'publicKey', label: 'Public key (client id)', placeholder: '' },
-  { key: 'privateKey', label: 'Private key (secret)', placeholder: '' },
+  { key: 'privateKey', label: 'Private key', placeholder: '' },
   { key: 'ipnSecret', label: 'IPN secret', placeholder: '' },
-  { key: 'appUrl', label: 'Site / app URL', placeholder: 'http://localhost:3000' },
-] as const satisfies ReadonlyArray<{ key: ConfigField; label: string; placeholder: string }>;
+  { key: 'appUrl', label: 'Site / app URL', placeholder: 'https://shop.example' },
+] as const;
+
+type TextField = (typeof TEXT_FIELDS)[number]['key'];
+type Values = Record<TextField, string>;
 
 function SourceBadge({ source }: { source: ConfigSource }) {
   const override = source === 'override';
@@ -44,43 +39,79 @@ function SourceBadge({ source }: { source: ConfigSource }) {
   );
 }
 
-export function DevConfigForm({ initialEffective, initialSources }: Props) {
+/**
+ * A secret renders blank whatever its stored value — the server never sends one
+ * back. Blank therefore means "keep what's stored", so its input starts empty and
+ * the label carries only a last-4 hint. "Reset to env" is the one way to clear it.
+ *
+ * A non-secret starts empty when it comes from env (the env value shows as the
+ * placeholder) and prefilled when it's an override; clearing it reverts to env.
+ */
+function seed(view: ConfigView): Values {
+  const values = {} as Values;
+  for (const field of TEXT_FIELDS) {
+    const cell = view.fields[field.key];
+    values[field.key] = !cell.secret && cell.source === 'override' ? cell.value : '';
+  }
+  return values;
+}
+
+export function DevConfigForm({ initialView }: Props) {
   const { toast } = useToast();
-  const [sources, setSources] = useState(initialSources);
-  const [mode, setMode] = useState<PaymentsMode>(initialEffective.mode);
-  // Env-sourced fields start empty (env value shown as placeholder hint); only
-  // override-sourced fields are pre-filled. Typing sets an override; clearing a
-  // field reverts it to env (an empty override falls back on the server).
-  const [values, setValues] = useState<Record<(typeof TEXT_FIELDS)[number]['key'], string>>(() => {
-    const seed = {} as Record<(typeof TEXT_FIELDS)[number]['key'], string>;
-    for (const f of TEXT_FIELDS) {
-      seed[f.key] = initialSources[f.key] === 'override' ? initialEffective[f.key] : '';
+  const [view, setView] = useState(initialView);
+  const [mode, setMode] = useState<PaymentsMode>(initialView.fields.mode.value as PaymentsMode);
+  const [values, setValues] = useState<Values>(() => seed(initialView));
+  const [busy, setBusy] = useState(false);
+
+  const applyView = (next: ConfigView) => {
+    setView(next);
+    setMode(next.fields.mode.value as PaymentsMode);
+    setValues(seed(next));
+  };
+
+  /** Blank secrets are dropped, so saving without retyping a key doesn't wipe it. */
+  const payload = (): Record<string, string> => {
+    const body: Record<string, string> = { mode };
+    for (const field of TEXT_FIELDS) {
+      const value = values[field.key];
+      if (view.fields[field.key].secret && value.trim() === '') continue;
+      body[field.key] = value;
     }
-    return seed;
-  });
-  const [saving, setSaving] = useState(false);
+    return body;
+  };
 
-  const envHint = (key: (typeof TEXT_FIELDS)[number]['key'], fallback: string): string =>
-    initialSources[key] === 'env' && initialEffective[key] ? initialEffective[key] : fallback;
-
-  const save = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
+  const send = async (init: RequestInit, done: string) => {
+    setBusy(true);
     try {
-      const res = await fetch('/api/dev/config', {
+      const res = await fetch('/api/dev/config', init);
+      if (!res.ok) throw new Error(`[${res.status}]`);
+      applyView((await res.json()) as ConfigView);
+      toast(done, 'success');
+    } catch (err) {
+      toast(`Failed: ${String(err)}`, 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const save = (e: React.FormEvent) => {
+    e.preventDefault();
+    void send(
+      {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ mode, ...values }),
-      });
-      if (!res.ok) throw new Error(`save failed [${res.status}]`);
-      const data: { sources: Record<ConfigField, ConfigSource> } = await res.json();
-      setSources(data.sources);
-      toast('Config saved — applies to the next checkout/IPN.', 'success');
-    } catch (err) {
-      toast(`Save failed: ${String(err)}`, 'error');
-    } finally {
-      setSaving(false);
-    }
+        body: JSON.stringify(payload()),
+      },
+      'Saved — applies to the next checkout / IPN.',
+    );
+  };
+
+  const reset = () => void send({ method: 'DELETE' }, 'Override cleared — back to env.');
+
+  const placeholderFor = (key: TextField, fallback: string): string => {
+    const cell = view.fields[key];
+    if (cell.secret) return cell.hint ? `${cell.hint} — blank keeps it` : 'not set';
+    return cell.source === 'env' && cell.value ? cell.value : fallback;
   };
 
   return (
@@ -88,15 +119,30 @@ export function DevConfigForm({ initialEffective, initialSources }: Props) {
       <div className="flex flex-col gap-1.5">
         <h1 className="text-2xl font-semibold text-[var(--color-text)]">Gateway config</h1>
         <p className="text-sm text-[var(--color-muted)]">
-          Dev-only runtime override. A filled field wins over its env var; clear a field to fall
-          back to env. Not available in production.
+          Runtime override, layered on top of the env vars. A filled field wins over its env var;
+          clearing one falls back to env. The private key and IPN secret are write-only — never
+          shown, and left blank they keep whatever is stored.
         </p>
       </div>
+
+      {!view.persistent && (
+        <div className="flex gap-3 rounded-[var(--radius)] bg-[color-mix(in_oklab,var(--color-amber)_12%,transparent)] p-4 text-sm text-[var(--color-text)]">
+          <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-[var(--color-amber)]" />
+          <p>
+            No shared store is configured, so this override lives in one instance&apos;s memory. On
+            serverless that means per-invocation (Vercel) or per-isolate (Workers) — the next
+            request may not see what you save. Set{' '}
+            <code className="text-[var(--color-amber)]">UPSTASH_REDIS_REST_URL</code> and{' '}
+            <code className="text-[var(--color-amber)]">UPSTASH_REDIS_REST_TOKEN</code> to make it
+            stick.
+          </p>
+        </div>
+      )}
 
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
           <Label htmlFor="cfg-mode">Payments mode</Label>
-          <SourceBadge source={sources.mode} />
+          <SourceBadge source={view.fields.mode.source} />
         </div>
         <Select
           id="cfg-mode"
@@ -108,26 +154,38 @@ export function DevConfigForm({ initialEffective, initialSources }: Props) {
         </Select>
       </div>
 
-      {TEXT_FIELDS.map((f) => (
-        <div key={f.key} className="flex flex-col gap-2">
+      {TEXT_FIELDS.map((field) => (
+        <div key={field.key} className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
-            <Label htmlFor={`cfg-${f.key}`}>{f.label}</Label>
-            <SourceBadge source={sources[f.key]} />
+            <Label htmlFor={`cfg-${field.key}`}>{field.label}</Label>
+            <SourceBadge source={view.fields[field.key].source} />
           </div>
           <Input
-            id={`cfg-${f.key}`}
-            value={values[f.key]}
-            placeholder={envHint(f.key, f.placeholder) || undefined}
+            id={`cfg-${field.key}`}
+            type={view.fields[field.key].secret ? 'password' : 'text'}
+            value={values[field.key]}
+            placeholder={placeholderFor(field.key, field.placeholder) || undefined}
             autoComplete="off"
             spellCheck={false}
-            onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
+            onChange={(e) => setValues((v) => ({ ...v, [field.key]: e.target.value }))}
           />
         </div>
       ))}
 
-      <Button type="submit" disabled={saving} leftIcon={<Save className="h-4 w-4" />}>
-        {saving ? 'Saving…' : 'Save config'}
-      </Button>
+      <div className="flex gap-3">
+        <Button type="submit" disabled={busy} leftIcon={<Save className="h-4 w-4" />}>
+          {busy ? 'Working…' : 'Save config'}
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          disabled={busy}
+          onClick={reset}
+          leftIcon={<RotateCcw className="h-4 w-4" />}
+        >
+          Reset to env
+        </Button>
+      </div>
     </form>
   );
 }
