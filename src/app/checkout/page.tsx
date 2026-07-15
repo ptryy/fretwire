@@ -3,7 +3,7 @@
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useCart } from '@/components/cart-provider';
 import { Button } from '@/components/ui/button';
@@ -13,21 +13,55 @@ import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { formatUsd } from '@/lib/format';
 
-const COINS = [
-  { coin: 'USDT', label: 'USDT · ERC20' },
-  { coin: 'ETH', label: 'ETH · Ethereum' },
-] as const;
+type Conversion = {
+  coin: string;
+  network: string;
+  name: string;
+  priceUsd: number;
+  amount: number;
+};
 
-type Coin = (typeof COINS)[number]['coin'];
+function formatCoinAmount(n: number): string {
+  return n >= 1 ? n.toFixed(2) : n.toFixed(6);
+}
 
 export default function CheckoutPage() {
   const { items, total, clear } = useCart();
   const router = useRouter();
   const [email, setEmail] = useState('');
-  const [coin, setCoin] = useState<Coin>('USDT');
+  const [conversions, setConversions] = useState<Conversion[]>([]);
+  const [coin, setCoin] = useState('');
+  const [quoteError, setQuoteError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
   const [error, setError] = useState('');
+
+  // Stable dependency: refetch only when the cart contents actually change.
+  const cartKey = items.map((i) => `${i.slug}:${i.qty}`).join(',');
+
+  useEffect(() => {
+    if (items.length === 0) return;
+    let cancelled = false;
+    setQuoteError(false);
+    fetch('/api/checkout/quote', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ items: items.map((i) => ({ slug: i.slug, qty: i.qty })) }),
+    })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error('quote failed'))))
+      .then((d: { conversions: Conversion[] }) => {
+        if (cancelled) return;
+        setConversions(d.conversions);
+        setCoin((prev) => prev || d.conversions[0]?.coin || '');
+      })
+      .catch(() => {
+        if (!cancelled) setQuoteError(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartKey]);
 
   if (items.length === 0 && !redirecting) {
     return (
@@ -69,6 +103,8 @@ export default function CheckoutPage() {
     }
   };
 
+  const noRates = conversions.length === 0;
+
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-6 px-6 py-12">
       <h1 className="font-display text-3xl font-semibold">Checkout</h1>
@@ -106,13 +142,23 @@ export default function CheckoutPage() {
 
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="coin">Pay with</Label>
-          <Select id="coin" value={coin} onChange={(e) => setCoin(e.target.value as Coin)}>
-            {COINS.map((c) => (
+          <Select
+            id="coin"
+            value={coin}
+            onChange={(e) => setCoin(e.target.value)}
+            disabled={noRates}
+          >
+            {conversions.map((c) => (
               <option key={c.coin} value={c.coin}>
-                {c.label}
+                {c.name} ({c.coin}·{c.network}) — ≈ {formatCoinAmount(c.amount)} {c.coin}
               </option>
             ))}
           </Select>
+          {quoteError && (
+            <p className="text-sm text-[color-mix(in_oklab,var(--color-ember)_75%,white)]">
+              Không tải được tỷ giá — thử lại.
+            </p>
+          )}
         </div>
 
         {error && (
@@ -121,7 +167,7 @@ export default function CheckoutPage() {
 
         <Button
           type="submit"
-          disabled={submitting || redirecting}
+          disabled={submitting || redirecting || noRates || !coin}
           rightIcon={<ArrowRight className="h-4 w-4" />}
         >
           {submitting || redirecting ? 'Creating order…' : `Pay ${formatUsd(total)}`}
