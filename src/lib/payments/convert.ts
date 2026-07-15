@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { getPaymentsConfig } from './config';
+import type { PaymentsMode } from './types';
 
 export type Conversion = {
   coin: string;
@@ -59,4 +60,32 @@ export async function convertUsd(
     return [match];
   }
   return conversions;
+}
+
+/** Legacy mock list: 1:1 USD, no live rate, no XLM (mock mode is a simplification). */
+function mockConversions(usd: number): Conversion[] {
+  return [
+    { coin: 'USDT', network: 'ERC20', name: 'Tether', priceUsd: 1, amount: usd },
+    { coin: 'ETH', network: 'ETH', name: 'Ethereum', priceUsd: 1, amount: usd },
+  ];
+}
+
+/** Conversions for the checkout selector. http: live; mock: legacy static list. */
+export async function quoteConversions(
+  usd: number,
+): Promise<{ mode: PaymentsMode; conversions: Conversion[] }> {
+  const { mode } = await getPaymentsConfig();
+  if (mode === 'http') return { mode, conversions: await convertUsd(usd) };
+  return { mode, conversions: mockConversions(usd) };
+}
+
+/** The order amount to send the gateway. http: converted coin amount; mock: USD 1:1. */
+export async function resolveOrderAmount(
+  usd: number,
+  coin: string,
+  network: string,
+): Promise<number> {
+  const { mode } = await getPaymentsConfig();
+  if (mode === 'http') return (await convertUsd(usd, coin, network))[0].amount;
+  return usd;
 }

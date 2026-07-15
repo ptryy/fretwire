@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { convertUsd } from '@/lib/payments/convert';
+import { convertUsd, quoteConversions, resolveOrderAmount } from '@/lib/payments/convert';
 import { getStore } from '@/lib/store';
 
 function mockFetchOnce(body: unknown, ok = true, status = 200) {
@@ -68,5 +68,46 @@ describe('convertUsd', () => {
       data: { usd: 10, conversions: [{ coin: 'ETH', network: 'ETH', name: 'Ethereum', priceUsd: 1877, amount: 0.005 }] },
     });
     await expect(convertUsd(10, 'XLM', 'XLM')).rejects.toThrow();
+  });
+});
+
+describe('quoteConversions', () => {
+  it('returns the legacy 1:1 list (no XLM) in mock mode', async () => {
+    const { mode, conversions } = await quoteConversions(50);
+    expect(mode).toBe('mock');
+    expect(conversions.map((c) => c.coin)).toEqual(['USDT', 'ETH']);
+    expect(conversions.every((c) => c.amount === 50)).toBe(true);
+  });
+
+  it('returns live conversions in http mode', async () => {
+    await getStore().setConfig({ mode: 'http', apiUrl: 'https://gw.test' });
+    mockFetchOnce({
+      success: true,
+      data: {
+        usd: 50,
+        conversions: [{ coin: 'XLM', network: 'XLM', name: 'Stellar', priceUsd: 0.18, amount: 277.7 }],
+      },
+    });
+    const { mode, conversions } = await quoteConversions(50);
+    expect(mode).toBe('http');
+    expect(conversions[0].coin).toBe('XLM');
+  });
+});
+
+describe('resolveOrderAmount', () => {
+  it('returns the USD amount unchanged in mock mode', async () => {
+    expect(await resolveOrderAmount(100, 'USDT', 'ERC20')).toBe(100);
+  });
+
+  it('returns the converted coin amount in http mode', async () => {
+    await getStore().setConfig({ mode: 'http', apiUrl: 'https://gw.test' });
+    mockFetchOnce({
+      success: true,
+      data: {
+        usd: 100,
+        conversions: [{ coin: 'XLM', network: 'XLM', name: 'Stellar', priceUsd: 0.1835, amount: 544.96 }],
+      },
+    });
+    expect(await resolveOrderAmount(100, 'XLM', 'XLM')).toBeCloseTo(544.96);
   });
 });
