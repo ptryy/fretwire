@@ -2,11 +2,15 @@ import { z } from 'zod';
 
 import { getProductsBySlugs } from './catalog';
 
-/** Checkout request body (cart lines + buyer email + chosen coin). */
-export const checkoutInputSchema = z.object({
+/** Cart lines only — reused by the quote route and the full checkout schema. */
+export const cartItemsSchema = z.object({
   items: z.array(z.object({ slug: z.string().min(1), qty: z.number().int().positive() })).min(1),
+});
+
+/** Checkout request body (cart lines + buyer email + chosen coin). */
+export const checkoutInputSchema = cartItemsSchema.extend({
   email: z.string().email(),
-  coin: z.enum(['ETH', 'USDT']),
+  coin: z.enum(['ETH', 'USDT', 'XLM']),
 });
 
 export type CheckoutInput = z.infer<typeof checkoutInputSchema>;

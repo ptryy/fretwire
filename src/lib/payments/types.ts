@@ -65,6 +65,7 @@ export type ConfigView = {
 export const ACCEPTED_COINS = [
   { coin: 'ETH', network: 'ETH', label: 'Ethereum (ETH)' },
   { coin: 'USDT', network: 'ERC20', label: 'Tether (USDT · ERC20)' },
+  { coin: 'XLM', network: 'XLM', label: 'Stellar (XLM)' },
 ] as const;
 
 export type AcceptedCoin = (typeof ACCEPTED_COINS)[number]['coin'];
