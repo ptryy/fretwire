@@ -2,20 +2,19 @@ import { NextResponse } from 'next/server';
 
 import { checkoutInputSchema, priceCart } from '@/lib/checkout';
 import { getClient } from '@/lib/payments/client';
-import { createLocalOrder, setGatewayFields } from '@/lib/store/orders';
+import { resolveOrderAmount } from '@/lib/payments/convert';
 import { networkForCoin } from '@/lib/payments/types';
+import { createLocalOrder, setGatewayFields } from '@/lib/store/orders';
 
 /**
- * The gateway requires `externalOrderId` as a positive **integer** (a string or
- * an oversized value is rejected). We key the local store/route by its string
- * form and send the numeric form to the gateway. int32-ranged keeps it within
- * the backend's accepted bounds; random avoids cross-order collisions.
+ * The gateway requires `externalOrderId` as a positive **integer**. We key the
+ * local store by its string form and send the numeric form to the gateway.
  */
 function newExternalOrderId(): string {
   return String(Math.floor(Math.random() * 2_000_000_000) + 1);
 }
 
-/** Create an order: price the cart, create a gateway invoice, persist, return the pay URL. */
+/** Create an order: price the cart, convert to the coin, create the gateway invoice. */
 export async function POST(req: Request): Promise<Response> {
   const body: unknown = await req.json().catch(() => null);
   const parsed = checkoutInputSchema.safeParse(body);
@@ -24,13 +23,27 @@ export async function POST(req: Request): Promise<Response> {
   }
   const { items, email, coin } = parsed.data;
 
+  // Server-derived network (never trust the client). Also rejects any coin not
+  // in ACCEPTED_COINS.
+  const network = networkForCoin(coin);
+  if (!network) {
+    return NextResponse.json({ error: 'invalid_request' }, { status: 400 });
+  }
+
   const priced = priceCart(items);
   if (!priced) {
     return NextResponse.json({ error: 'unknown_product' }, { status: 400 });
   }
 
+  // http mode: convert USD → coin amount; mock mode: 1:1.
+  let amount: number;
+  try {
+    amount = await resolveOrderAmount(priced.total, coin, network);
+  } catch {
+    return NextResponse.json({ error: 'conversion_failed' }, { status: 502 });
+  }
+
   const externalOrderId = newExternalOrderId();
-  const network = networkForCoin(coin);
   await createLocalOrder({
     externalOrderId,
     email,
@@ -43,7 +56,7 @@ export async function POST(req: Request): Promise<Response> {
   try {
     const client = await getClient();
     const order = await client.createOrder({
-      amount: priced.total,
+      amount,
       coin,
       network,
       externalOrderId: Number(externalOrderId),

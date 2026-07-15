@@ -1,12 +1,21 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { POST as quote } from '@/app/api/checkout/quote/route';
+import { POST as checkout } from '@/app/api/checkout/route';
 import { getStore } from '@/lib/store';
 
 const SLUG = 'vesper-nova-s'; // a real catalog slug — verify in src/lib/catalog/data.ts
 
 function post(body: unknown): Request {
   return new Request('http://test/api/checkout/quote', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+}
+
+function checkoutPost(body: unknown): Request {
+  return new Request('http://test/api/checkout', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body),
@@ -59,5 +68,23 @@ describe('POST /api/checkout/quote', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 500, json: async () => ({}) }));
     const res = await quote(post({ items: [{ slug: SLUG, qty: 1 }] }));
     expect(res.status).toBe(502);
+  });
+});
+
+describe('POST /api/checkout', () => {
+  it('creates an order in mock mode and returns a pay URL', async () => {
+    const res = await checkout(
+      checkoutPost({ items: [{ slug: SLUG, qty: 1 }], email: 'a@b.co', coin: 'USDT' }),
+    );
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as { payUrl?: string };
+    expect(json.payUrl).toMatch(/^\/pay\//);
+  });
+
+  it('400s on an unknown product', async () => {
+    const res = await checkout(
+      checkoutPost({ items: [{ slug: 'not-a-real-slug', qty: 1 }], email: 'a@b.co', coin: 'USDT' }),
+    );
+    expect(res.status).toBe(400);
   });
 });
