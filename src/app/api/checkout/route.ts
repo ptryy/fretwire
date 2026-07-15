@@ -4,15 +4,8 @@ import { checkoutInputSchema, priceCart } from '@/lib/checkout';
 import { getClient } from '@/lib/payments/client';
 import { resolveOrderAmount } from '@/lib/payments/convert';
 import { networkForCoin } from '@/lib/payments/types';
-import { createLocalOrder, setGatewayFields } from '@/lib/store/orders';
-
-/**
- * The gateway requires `externalOrderId` as a positive **integer**. We key the
- * local store by its string form and send the numeric form to the gateway.
- */
-function newExternalOrderId(): string {
-  return String(Math.floor(Math.random() * 2_000_000_000) + 1);
-}
+import { createLocalOrder, getOrder, setGatewayFields } from '@/lib/store/orders';
+import { uniqueOrderId } from '@/lib/store/order-id';
 
 /** Create an order: price the cart, convert to the coin, create the gateway invoice. */
 export async function POST(req: Request): Promise<Response> {
@@ -43,7 +36,7 @@ export async function POST(req: Request): Promise<Response> {
     return NextResponse.json({ error: 'conversion_failed' }, { status: 502 });
   }
 
-  const externalOrderId = newExternalOrderId();
+  const externalOrderId = await uniqueOrderId((id) => getOrder(id).then((o) => o !== null));
   await createLocalOrder({
     externalOrderId,
     email,
