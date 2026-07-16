@@ -2,6 +2,7 @@ import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 import { FretRail } from '@/components/fret-rail';
+import { GuitarArt } from '@/components/guitar-art';
 import { ProductCard } from '@/components/product-card';
 import { listCategories, listProducts } from '@/lib/catalog';
 
@@ -12,17 +13,30 @@ export default function HomePage() {
   return (
     <main className="mx-auto flex max-w-6xl flex-col gap-16 px-6 py-12">
       <section className="amp-glow relative overflow-hidden rounded-[calc(var(--radius)*1.6)] border border-[var(--color-border)] px-8 py-16 sm:px-12 sm:py-20">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-amber)]">
-          Electric · Acoustic · Classical · Bass
-        </p>
-        <h1 className="mt-4 max-w-2xl font-display text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
-          Guitars worth the reach.
-        </h1>
-        <p className="mt-5 max-w-lg text-[var(--color-muted)]">
-          A modern shop for players — from a first nylon-string to a seven-string built for drop
-          tunings. Checkout in crypto, settled on-chain.
-        </p>
-        <div className="mt-8 flex flex-wrap gap-3">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute bottom-0 right-6 hidden h-[128%] items-end lg:flex xl:right-16"
+        >
+          <div className="hero-rise h-full [aspect-ratio:300/808]">
+            <GuitarArt
+              art="electric"
+              seed="nocturne-eclipse-lp"
+              className="drop-shadow-[0_28px_56px_rgba(0,0,0,0.55)]"
+            />
+          </div>
+        </div>
+        <div className="relative z-10">
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-amber)]">
+            Electric · Acoustic · Classical · Bass
+          </p>
+          <h1 className="mt-4 max-w-2xl font-display text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
+            Guitars worth the reach.
+          </h1>
+          <p className="mt-5 max-w-lg text-[var(--color-muted)]">
+            A modern shop for players — from a first nylon-string to a seven-string built for drop
+            tunings. Checkout in crypto, settled on-chain.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
           <Link
             href="/products"
             className="inline-flex h-12 items-center gap-2 rounded-[var(--radius)] bg-[var(--color-amber)] px-6 font-semibold text-[#14110e] transition-colors hover:bg-[color-mix(in_oklab,var(--color-amber)_88%,white)]"
@@ -35,12 +49,13 @@ export default function HomePage() {
           >
             Shop electric
           </Link>
+          </div>
         </div>
       </section>
 
       <section className="flex flex-col gap-5">
         <h2 className="font-display text-2xl font-semibold">Browse by type</h2>
-        <FretRail />
+        <FretRail count={categories.length} />
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {categories.map((c) => (
             <Link
