@@ -2,7 +2,7 @@ import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 import { FretRail } from '@/components/fret-rail';
-import { GuitarArt } from '@/components/guitar-art';
+import { HeroGuitarSlider } from '@/components/hero-guitar-slider';
 import { ProductCard } from '@/components/product-card';
 import { listCategories, listProducts } from '@/lib/catalog';
 
@@ -13,18 +13,7 @@ export default function HomePage() {
   return (
     <main className="mx-auto flex max-w-6xl flex-col gap-16 px-6 py-12">
       <section className="amp-glow relative overflow-hidden rounded-[calc(var(--radius)*1.6)] border border-[var(--color-border)] px-8 py-16 sm:px-12 sm:py-20">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute bottom-0 right-6 hidden h-[128%] items-end lg:flex xl:right-16"
-        >
-          <div className="hero-rise h-full [aspect-ratio:300/808]">
-            <GuitarArt
-              art="electric"
-              seed="nocturne-eclipse-lp"
-              className="drop-shadow-[0_28px_56px_rgba(0,0,0,0.55)]"
-            />
-          </div>
-        </div>
+        <HeroGuitarSlider />
         <div className="relative z-10">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-amber)]">
             Electric · Acoustic · Classical · Bass
